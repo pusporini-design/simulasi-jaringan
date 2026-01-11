@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informatika XI - Media Pembelajaran Jaringan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .tech-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #2563eb 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+        }
+
+        .hidden-section { display: none; }
+
+        /* Topology Simulation Styles */
+        .node {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            z-index: 40;
+        }
+        .node:hover { transform: scale(1.1); filter: brightness(1.1); }
+        
+        .connection-line {
+            stroke: #cbd5e1;
+            stroke-width: 5;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .connection-line.broken {
+            stroke: #ef4444 !important;
+            stroke-dasharray: 10;
+        }
+        .packet-pulse {
+            fill: #f59e0b;
+            filter: drop-shadow(0 0 12px #f59e0b);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeIn 0.5s ease-out forwards; }
+        
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navigation Bar -->
+    <nav class="tech-gradient text-white p-5 sticky top-0 z-50 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('home')">
+                <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                </div>
+                <span class="font-extrabold text-2xl tracking-tight">JARINGAN <span class="text-blue-300">INTERAKTIF</span></span>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex gap-6 font-semibold text-sm">
+                    <button onclick="showSection('home')" class="hover:text-blue-200 transition">Beranda</button>
+                    <button onclick="showSection('topologi-lab')" class="hover:text-blue-200 transition">Lab Topologi</button>
+                </div>
+                <div class="bg-white/10 px-4 py-2 rounded-2xl text-sm font-bold border border-white/20">
+                    🏆 XP: <span id="xp-display">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6">
+
+        <!-- SEKSI 1: MENU UTAMA -->
+        <section id="home" class="animate-in space-y-12 py-10">
+            <div class="text-center">
+                <h1 class="text-5xl md:text-6xl font-black text-slate-900 mb-6">Halo, Arsitek Jaringan!</h1>
+                <p class="text-slate-500 text-xl max-w-2xl mx-auto leading-relaxed">Siap mengeksplorasi bagaimana dunia terhubung? Pilih modul interaktif di bawah ini.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div onclick="showSection('simulasi-alur')" class="glass-card p-10 rounded-[3rem] cursor-pointer hover:-translate-y-3 transition-all border-b-8 border-blue-500 group">
+                    <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mb-8 text-4xl group-hover:rotate-12 transition">📡</div>
+                    <h3 class="text-2xl font-bold mb-3">Alur Data</h3>
+                    <p class="text-slate-500">Pelajari perjalanan paket data dari gadget Anda ke seluruh dunia.</p>
+                </div>
+
+                <div onclick="showSection('topologi-lab')" class="glass-card p-10 rounded-[3rem] cursor-pointer hover:-translate-y-3 transition-all border-b-8 border-emerald-500 group">
+                    <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mb-8 text-4xl group-hover:rotate-12 transition">🕸️</div>
+                    <h3 class="text-2xl font-bold mb-3">Lab Topologi</h3>
+                    <p class="text-slate-500">Uji ketahanan jaringan secara real-time dengan simulasi kabel putus.</p>
+                </div>
+
+                <div onclick="showSection('misi-game')" class="glass-card p-10 rounded-[3rem] cursor-pointer hover:-translate-y-3 transition-all border-b-8 border-amber-500 group">
+                    <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-3xl flex items-center justify-center mb-8 text-4xl group-hover:rotate-12 transition">🎮</div>
+                    <h3 class="text-2xl font-bold mb-3">Misi Tantangan</h3>
+                    <p class="text-slate-500">Selesaikan kasus nyata dan buktikan keahlianmu mendesain jaringan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI 2: SIMULASI ALUR DATA -->
+        <section id="simulasi-alur" class="hidden-section animate-in">
+            <div class="bg-white p-10 rounded-[3rem] shadow-2xl relative">
+                <button onclick="showSection('home')" class="mb-6 text-blue-600 font-bold flex items-center gap-2">← Kembali ke Menu</button>
+                <h2 class="text-3xl font-bold mb-8">Simulasi Perjalanan Paket Data</h2>
+                <div class="flex justify-around items-center h-80 border-4 border-dashed border-slate-100 rounded-[3rem] relative overflow-hidden bg-slate-50/50">
+                    <div class="flex flex-col items-center z-10">
+                        <div class="text-6xl mb-4">📱</div>
+                        <span class="font-bold">Smartphone</span>
+                    </div>
+                    <div class="flex flex-col items-center z-10">
+                        <div class="w-24 h-10 bg-slate-800 rounded-full border-b-4 border-blue-500 flex items-center justify-center text-[10px] text-white font-bold">WIFI ROUTER</div>
+                        <span class="mt-2 text-xs font-bold text-slate-400 uppercase">Gateway</span>
+                    </div>
+                    <div class="flex flex-col items-center z-10">
+                        <div class="text-7xl mb-4 animate-pulse">☁️</div>
+                        <span class="font-bold text-blue-600">Internet / Cloud</span>
+                    </div>
+                    <!-- Paket Animasi -->
+                    <div id="basic-packet" class="absolute w-6 h-6 bg-amber-500 rounded-lg hidden shadow-lg shadow-amber-300"></div>
+                </div>
+                <div class="mt-10">
+                    <button onclick="sendBasicPacket()" class="bg-blue-600 text-white px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition shadow-xl shadow-blue-200">KIRIM DATA SEKARANG</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI 3: LABORATORIUM TOPOLOGI -->
+        <section id="topologi-lab" class="hidden-section animate-in">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Control Panel -->
+                <aside class="space-y-6">
+                    <button onclick="showSection('home')" class="text-blue-600 font-bold flex items-center gap-2">← Menu Utama</button>
+                    
+                    <div class="glass-card p-8 rounded-[2.5rem]">
+                        <h3 class="text-xs font-black text-blue-600 uppercase tracking-widest mb-6">Konfigurasi Jaringan</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="drawNetwork('star')" class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold hover:border-blue-500 transition-all">STAR</button>
+                            <button onclick="drawNetwork('bus')" class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold hover:border-blue-500 transition-all">BUS</button>
+                            <button onclick="drawNetwork('ring')" class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold hover:border-blue-500 transition-all">RING</button>
+                            <button onclick="drawNetwork('mesh')" class="p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xs font-bold hover:border-blue-500 transition-all">MESH</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-8 rounded-[2.5rem]">
+                        <h3 class="text-sm font-bold mb-4">Uji Kendali</h3>
+                        <button onclick="simulateTransfer()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black mb-3 shadow-lg shadow-blue-200 hover:bg-blue-700">MULAI TRANSMISI</button>
+                        <button onclick="repairCables()" class="w-full bg-emerald-100 text-emerald-700 py-4 rounded-2xl font-bold text-xs hover:bg-emerald-200 transition">PERBAIKI SEMUA KABEL</button>
+                    </div>
+
+                    <div class="bg-slate-900 text-emerald-400 p-5 rounded-3xl font-mono text-[11px] h-48 overflow-y-auto shadow-inner border border-white/10" id="topo-log">
+                        <div>> System Ready...</div>
+                    </div>
+                </aside>
+
+                <!-- Lab Canvas -->
+                <div class="lg:col-span-3 glass-card rounded-[3.5rem] relative overflow-hidden min-h-[600px] flex items-center justify-center bg-[#fcfdfe] border-8 border-white">
+                    <div class="absolute top-6 left-6 bg-white/90 backdrop-blur px-5 py-2 rounded-full text-[11px] font-black border border-slate-100 shadow-sm z-50 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> MODE INTERAKTIF AKTIF
+                    </div>
+                    
+                    <svg id="topo-svg" class="absolute inset-0 w-full h-full pointer-events-none">
+                        <g id="links-layer"></g>
+                        <circle id="topo-packet" r="10" class="packet-pulse opacity-0" />
+                    </svg>
+                    
+                    <div id="nodes-layer" class="absolute inset-0 pointer-events-none"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEKSI 4: GAME MISI -->
+        <section id="misi-game" class="hidden-section animate-in max-w-2xl mx-auto py-10">
+            <div class="glass-card p-12 rounded-[3.5rem] border-t-[12px] border-amber-500 shadow-2xl">
+                <button onclick="showSection('home')" class="mb-6 text-amber-600 font-bold flex items-center gap-2">← Batal</button>
+                <h2 class="text-4xl font-black mb-8 text-slate-800">Tantangan #1:<br>Arsitek Sekolah</h2>
+                <p class="text-slate-600 mb-10 text-lg leading-relaxed">Sebuah sekolah ingin membangun laboratorium komputer. Jika satu komputer rusak, koneksi internet di komputer lainnya <b>tidak boleh terputus</b>. Namun, sekolah juga ingin menghemat biaya kabel agar tidak terlalu rumit. Topologi manakah yang harus Anda gunakan?</p>
+                <div class="space-y-4">
+                    <button onclick="ans(true, 'Benar sekali! Topologi Star paling populer karena mudah dikelola dan efisien untuk sekolah.')" class="w-full p-8 text-left border-2 border-slate-100 rounded-3xl hover:border-blue-500 hover:bg-blue-50 font-bold text-xl transition-all flex justify-between items-center">
+                        <span>Topologi Star</span>
+                        <span class="text-2xl">⭐</span>
+                    </button>
+                    <button onclick="ans(false, 'Kurang tepat. Pada Bus, jika kabel utama (backbone) putus, seluruh lab akan kehilangan koneksi.')" class="w-full p-8 text-left border-2 border-slate-100 rounded-3xl hover:border-blue-500 hover:bg-blue-50 font-bold text-xl transition-all flex justify-between items-center">
+                        <span>Topologi Bus</span>
+                        <span class="text-2xl">🚌</span>
+                    </button>
+                    <button onclick="ans(false, 'Hampir benar. Mesh sangat kuat, tapi biayanya sangat mahal dan terlalu rumit untuk lab sekolah kecil.')" class="w-full p-8 text-left border-2 border-slate-100 rounded-3xl hover:border-blue-500 hover:bg-blue-50 font-bold text-xl transition-all flex justify-between items-center">
+                        <span>Topologi Mesh</span>
+                        <span class="text-2xl">🕸️</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Notifikasi -->
+    <div id="notif" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden items-center justify-center p-6 z-[100]">
+        <div class="bg-white p-10 rounded-[3rem] max-w-sm w-full text-center shadow-2xl border-b-8 border-blue-500">
+            <div id="notif-icon" class="text-7xl mb-6">✅</div>
+            <h3 id="notif-title" class="text-3xl font-black mb-4">Berhasil!</h3>
+            <p id="notif-body" class="text-slate-500 text-lg mb-10 leading-relaxed"></p>
+            <button onclick="document.getElementById('notif').style.display='none'" class="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black text-lg hover:bg-black transition-all">Lanjutkan</button>
+        </div>
+    </div>
+
+    <script>
+        let xp = 0;
+        let currentTopo = 'star';
+        let connections = [];
+        const topoPacket = document.getElementById('topo-packet');
+
+        const configs = {
+            star: {
+                nodes: [{id:'S', x:50, y:50, type:'hub', label:'CENTRAL HUB'}, {id:'A', x:50, y:15, label:'PC 1'}, {id:'B', x:85, y:50, label:'PC 2'}, {id:'C', x:50, y:85, label:'PC 3'}, {id:'D', x:15, y:50, label:'PC 4'}],
+                links: [['S','A'], ['S','B'], ['S','C'], ['S','D']]
+            },
+            bus: {
+                nodes: [{id:'A', x:20, y:40, label:'KLIEN A'}, {id:'B', x:40, y:40, label:'KLIEN B'}, {id:'C', x:60, y:40, label:'KLIEN C'}, {id:'D', x:80, y:40, label:'KLIEN D'}],
+                links: [['A','B'], ['B','C'], ['C','D']]
+            },
+            ring: {
+                nodes: [{id:'A', x:50, y:20, label:'NODE 1'}, {id:'B', x:80, y:50, label:'NODE 2'}, {id:'C', x:50, y:80, label:'NODE 3'}, {id:'D', x:20, y:50, label:'NODE 4'}],
+                links: [['A','B'], ['B','C'], ['C','D'], ['D','A']]
+            },
+            mesh: {
+                nodes: [{id:'A', x:30, y:30, label:'SERVER 1'}, {id:'B', x:70, y:30, label:'SERVER 2'}, {id:'C', x:70, y:70, label:'SERVER 3'}, {id:'D', x:30, y:70, label:'SERVER 4'}],
+                links: [['A','B'], ['A','C'], ['A','D'], ['B','C'], ['B','D'], ['C','D']]
+            }
+        };
+
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden-section'));
+            document.getElementById(id).classList.remove('hidden-section');
+            if(id === 'topologi-lab') drawNetwork(currentTopo);
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function logTopo(msg, color='text-emerald-400') {
+            const div = document.createElement('div');
+            div.className = color;
+            div.innerHTML = `> ${msg}`;
+            const log = document.getElementById('topo-log');
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function drawNetwork(type) {
+            currentTopo = type;
+            const nodesLayer = document.getElementById('nodes-layer');
+            const linksLayer = document.getElementById('links-layer');
+            nodesLayer.innerHTML = '';
+            linksLayer.innerHTML = '';
+            connections = [];
+
+            const config = configs[type];
+
+            config.links.forEach((link, idx) => {
+                const n1 = config.nodes.find(n => n.id === link[0]);
+                const n2 = config.nodes.find(n => n.id === link[1]);
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", `${n1.x}%`); line.setAttribute("y1", `${n1.y}%`);
+                line.setAttribute("x2", `${n2.x}%`); line.setAttribute("y2", `${n2.y}%`);
+                line.setAttribute("class", "connection-line pointer-events-auto");
+                line.onclick = () => {
+                    const conn = connections[idx];
+                    conn.broken = !conn.broken;
+                    line.classList.toggle('broken', conn.broken);
+                    logTopo(`Kabel ${conn.from}-${conn.to} ${conn.broken ? 'PUTUS!' : 'RECONNECTED'}`, conn.broken ? 'text-red-400' : 'text-emerald-400');
+                };
+                linksLayer.appendChild(line);
+                connections.push({from: link[0], to: link[1], broken: false, el: line});
+            });
+
+            config.nodes.forEach(n => {
+                const div = document.createElement('div');
+                div.className = "absolute node flex flex-col items-center justify-center pointer-events-auto";
+                div.style.left = `${n.x}%`; div.style.top = `${n.y}%`;
+                div.style.transform = 'translate(-50%, -50%)';
+                div.innerHTML = `
+                    <div class="bg-white p-4 rounded-[1.5rem] border-2 border-slate-100 shadow-xl text-3xl mb-2">
+                        ${n.type==='hub'?'🎛️':'💻'}
+                    </div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-2 py-0.5 rounded-full">${n.label}</span>`;
+                nodesLayer.appendChild(div);
+            });
+            logTopo(`Topology ${type.toUpperCase()} initialized.`);
+        }
+
+        async function simulateTransfer() {
+            logTopo("Memulai uji transmisi paket dari titik A...");
+            let route = [];
+            if(currentTopo === 'star') route = ['A', 'S', 'B'];
+            else if(currentTopo === 'mesh') route = ['A', 'B'];
+            else route = ['A', 'B'];
+
+            for(let i=0; i<route.length-1; i++) {
+                const from = route[i];
+                const to = route[i+1];
+                const conn = connections.find(c => (c.from === from && c.to === to) || (c.from === to && c.to === from));
+                
+                const n1 = configs[currentTopo].nodes.find(n => n.id === from);
+                const n2 = configs[currentTopo].nodes.find(n => n.id === to);
+                
+                if(conn.broken) {
+                    await animatePacket(n1, n2, true);
+                    logTopo("TRANS-FAILURE: Jalur terputus!", "text-red-500");
+                    showModal("Koneksi Gagal", "Paket data tidak dapat mencapai tujuan karena kabel fisik terputus.", "❌");
+                    return;
+                }
+                await animatePacket(n1, n2, false);
+            }
+            logTopo("TRANS-SUCCESS: Paket diterima di tujuan.", "text-emerald-400");
+            showModal("Transmisi Sukses", "Jaringan berfungsi dengan baik dan data terkirim sempurna!", "✅");
+        }
+
+        function animatePacket(n1, n2, fail) {
+            return new Promise(res => {
+                topoPacket.classList.remove('opacity-0');
+                topoPacket.setAttribute('cx', `${n1.x}%`);
+                topoPacket.setAttribute('cy', `${n1.y}%`);
+                
+                let p = 0;
+                const anim = () => {
+                    p += 0.03;
+                    if(fail && p > 0.5) {
+                        topoPacket.classList.add('opacity-0');
+                        res(); return;
+                    }
+                    const curX = n1.x + (n2.x - n1.x) * p;
+                    const curY = n1.y + (n2.y - n1.y) * p;
+                    topoPacket.setAttribute('cx', `${curX}%`);
+                    topoPacket.setAttribute('cy', `${curY}%`);
+                    if(p < 1) requestAnimationFrame(anim);
+                    else { topoPacket.classList.add('opacity-0'); res(); }
+                };
+                requestAnimationFrame(anim);
+            });
+        }
+
+        function showModal(title, body, icon) {
+            const m = document.getElementById('notif');
+            document.getElementById('notif-title').innerText = title;
+            document.getElementById('notif-body').innerText = body;
+            document.getElementById('notif-icon').innerText = icon;
+            m.style.display = 'flex';
+        }
+
+        function repairCables() {
+            connections.forEach(c => {
+                c.broken = false;
+                c.el.classList.remove('broken');
+            });
+            logTopo("System Maintenance: Semua kabel tersambung kembali.", "text-blue-400");
+        }
+
+        function ans(correct, msg) {
+            if(correct) {
+                xp += 100;
+                document.getElementById('xp-display').innerText = xp;
+                showModal("Jenius!", msg, "🌟");
+            } else {
+                showModal("Kurang Tepat", msg, "🤔");
+            }
+        }
+
+        function sendBasicPacket() {
+            const pkt = document.getElementById('basic-packet');
+            pkt.style.display = 'block';
+            pkt.style.left = '10%'; pkt.style.top = '50%';
+            pkt.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            setTimeout(() => {
+                pkt.style.left = '45%';
+                setTimeout(() => {
+                    pkt.style.left = '80%';
+                    setTimeout(() => pkt.style.display = 'none', 800);
+                }, 800);
+            }, 50);
+        }
+    </script>
+</body>
+</html>
